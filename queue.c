@@ -26,7 +26,7 @@ void q_free(struct list_head *l)
     struct list_head *pos, *temp;
 
     list_for_each_safe (pos, temp, l) {
-        entry = list_entry(pos, element_t, list);
+        element_t *entry = list_entry(pos, element_t, list);
         list_del(pos);  // Unlink the element from the list
         test_free(entry->value);
         test_free(entry);
@@ -103,7 +103,21 @@ bool q_delete_dup(struct list_head *head)
 }
 
 /* Swap every two adjacent nodes */
-void q_swap(struct list_head *head) {}
+void q_swap(struct list_head *head)
+{
+    struct list_head *cur = head->next->next, *prev = head->next;
+    int size = q_size(head), i = 0;
+    while (i <= size - 2) {
+        element_t *cur_element = list_entry(cur, element_t, list);
+        element_t *prev_element = list_entry(prev, element_t, list);
+        char *temp = cur_element->value;
+        cur_element->value = prev_element->value;
+        prev_element->value = temp;
+        cur = cur->next->next;
+        prev = prev->next->next;
+        i = i + 2;
+    }
+}
 
 /* Reverse elements in queue */
 void q_reverse(struct list_head *head) {}
