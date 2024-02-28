@@ -21,14 +21,25 @@ struct list_head *q_new()
 }
 
 /* Free all storage used by queue */
-void q_free(struct list_head *l) {}
+void q_free(struct list_head *l)
+{
+    struct list_head *pos, *temp;
+
+    list_for_each_safe (pos, temp, l) {
+        entry = list_entry(pos, element_t, list);
+        list_del(pos);  // Unlink the element from the list
+        test_free(entry->value);
+        test_free(entry);
+    }
+    free(l);
+}
 
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
 {
     element_t *new = malloc(sizeof(element_t));
-    new->value = malloc(sizeof(s) + 1);
-    int len = sizeof(s);
+    new->value = malloc(strlen(s) + 1);
+    int len = strlen(s);
     strncpy(new->value, s, len + 1);
     list_add(&new->list, head);
     return true;
@@ -38,8 +49,8 @@ bool q_insert_head(struct list_head *head, char *s)
 bool q_insert_tail(struct list_head *head, char *s)
 {
     element_t *new = malloc(sizeof(element_t));
-    new->value = malloc(sizeof(s) + 1);
-    int len = sizeof(s);
+    new->value = malloc(strlen(s) + 1);
+    int len = strlen(s);
     strncpy(new->value, s, len + 1);
     list_add_tail(&new->list, head);
     return true;
@@ -92,10 +103,7 @@ bool q_delete_dup(struct list_head *head)
 }
 
 /* Swap every two adjacent nodes */
-void q_swap(struct list_head *head)
-{
-    // https://leetcode.com/problems/swap-nodes-in-pairs/
-}
+void q_swap(struct list_head *head) {}
 
 /* Reverse elements in queue */
 void q_reverse(struct list_head *head) {}
