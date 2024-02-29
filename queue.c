@@ -109,6 +109,7 @@ bool q_delete_mid(struct list_head *head)
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+
     return true;
 }
 
@@ -194,7 +195,25 @@ void q_sort(struct list_head *head, bool descend) {}
 int q_ascend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
+    struct list_head *node, *safe;
+    char *right_max = list_entry(head->prev, element_t, list)->value;
+    for (node = (head)->prev, safe = node->prev; node != (head);
+         node = safe, safe = node->prev) {
+        element_t *entry = list_entry(node, element_t, list);
+        if (strcmp(right_max, entry->value) >= 0) {
+            right_max = entry->value;
+        } else {
+            list_del(node);
+            test_free(entry->value);
+            test_free(entry);
+        }
+    }
+    struct list_head *temp;
+    list_for_each (temp, head) {
+        element_t *ent = list_entry(temp, element_t, list);
+        printf("%s\n", ent->value);
+    }
+    return q_size(head);
 }
 
 /* Remove every node which has a node with a strictly greater value anywhere to
@@ -202,7 +221,20 @@ int q_ascend(struct list_head *head)
 int q_descend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
+    struct list_head *node, *safe;
+    char *right_max = list_entry(head->prev, element_t, list)->value;
+    for (node = (head)->prev, safe = node->prev; node != (head);
+         node = safe, safe = node->prev) {
+        element_t *entry = list_entry(node, element_t, list);
+        if (strcmp(right_max, entry->value) <= 0) {
+            right_max = entry->value;
+        } else {
+            list_del(node);
+            test_free(entry->value);
+            test_free(entry);
+        }
+    }
+    return q_size(head);
 }
 
 /* Merge all the queues into one sorted queue, which is in ascending/descending
