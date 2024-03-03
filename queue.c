@@ -215,8 +215,105 @@ struct list_head *find_tail(struct list_head *head)
     return current;
 }
 
+void print(struct list_head *head)
+{
+    struct list_head *cur = head;
+    do {
+        printf("%s => ", list_entry(cur, element_t, list)->value);
+        cur = cur->next;
+    } while (cur != head);
+    printf("\n");
+}
+
+struct list_head *merge(struct list_head *l1, struct list_head *l2)
+{
+    if (l1 == l2) {
+        return l1;
+    }
+    struct list_head *cur1, *cur2, *swap, result, head1, head2;
+    INIT_LIST_HEAD(&result);
+    INIT_LIST_HEAD(&head1);
+    INIT_LIST_HEAD(&head2);
+    list_add_tail(&head1, l1);
+    list_add_tail(&head2, l2);
+    cur1 = (&head1)->next;
+    cur2 = (&head2)->next;
+
+    while (cur1 != &head1 && cur2 != &head2) {
+        if (strcmp(list_entry(cur1, element_t, list)->value,
+                   list_entry(cur2, element_t, list)->value) <= 0) {
+            swap = cur1;
+            cur1 = cur1->next;
+            list_del(swap);
+            list_add_tail(swap, &result);
+        } else {
+            swap = cur2;
+            cur2 = cur2->next;
+            list_del(swap);
+            list_add_tail(swap, &result);
+        }
+    }
+    if (cur1 != &head1) {
+        list_splice_tail(&head1, (&result));
+    }
+    if (cur2 != &head2) {
+        list_splice_tail(&head2, (&result));
+    }
+    l1 = (&result)->next;
+    (&result)->prev->next = l1;
+    list_del(&result);
+    return l1;
+}
+
+struct list_head *split_two(struct list_head *head)
+{
+    struct list_head *slow, *fast;
+    slow = head;
+    fast = head->next;
+
+    while (fast != head && fast->next != head) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+
+    return slow;
+}
+
 /* Sort elements of queue in ascending/descending order */
-void q_sort(struct list_head *head, bool descend) {}
+struct list_head *sort(struct list_head *head, bool descend)
+{
+    struct list_head *second_head, *first_tail, *mid;
+    if ((head == NULL) || (head->next == head)) {
+        return head;
+    }
+
+    mid = split_two(head);
+    first_tail = mid;
+    second_head = mid->next;
+    first_tail->next = head;
+    second_head->prev = head->prev;
+    head->prev->next = second_head;
+    head->prev = first_tail;
+
+    struct list_head *result1 = sort(second_head, descend);
+    struct list_head *result2 = sort(head, descend);
+
+    head = merge(result1, result2);
+
+    return head;
+}
+
+void q_sort(struct list_head *head, bool descend)
+{
+    if ((head == NULL) || q_size(head) <= 1) {
+        return;
+    }
+    struct list_head *input = head->next;
+    list_del_init(head);
+
+    struct list_head *result = sort(input, descend);
+    list_add_tail(head, result);
+}
 
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
