@@ -14,15 +14,19 @@
 /* Create an empty queue */
 struct list_head *q_new()
 {
-    struct list_head *new_q;
-    new_q = malloc(sizeof(struct list_head));
-    INIT_LIST_HEAD(new_q);
-    return new_q;
+    struct list_head *new = malloc(sizeof(struct list_head));
+    if (!new)
+        return NULL;
+
+    INIT_LIST_HEAD(new);
+    return new;
 }
 
 /* Free all storage used by queue */
 void q_free(struct list_head *l)
 {
+    if (!l)
+        return;
     struct list_head *pos, *temp;
 
     list_for_each_safe (pos, temp, l) {
@@ -37,8 +41,18 @@ void q_free(struct list_head *l)
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
 {
+    if (!head) {
+        return false;
+    }
     element_t *new = malloc(sizeof(element_t));
+    if (!new) {
+        return false;
+    }
     new->value = malloc(strlen(s) + 1);
+    if (!(new->value)) {
+        free(new);
+        return false;
+    }
     int len = strlen(s);
     strncpy(new->value, s, len + 1);
     list_add(&new->list, head);
@@ -48,8 +62,18 @@ bool q_insert_head(struct list_head *head, char *s)
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    if (!head) {
+        return false;
+    }
     element_t *new = malloc(sizeof(element_t));
+    if (!new) {
+        return false;
+    }
     new->value = malloc(strlen(s) + 1);
+    if (!(new->value)) {
+        free(new);
+        return false;
+    }
     int len = strlen(s);
     strncpy(new->value, s, len + 1);
     list_add_tail(&new->list, head);
