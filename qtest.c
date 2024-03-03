@@ -57,6 +57,8 @@ extern int show_entropy;
  */
 #define BIG_LIST_SIZE 30
 
+extern void q_shuffle(struct list_head *head);
+
 /* Global variables */
 
 typedef struct {
@@ -289,6 +291,25 @@ static bool do_ih(int argc, char *argv[])
 static bool do_it(int argc, char *argv[])
 {
     return queue_insert(POS_TAIL, argc, argv);
+}
+
+static bool do_shuffle(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+    if (!current || !current->q) {
+        report(3, "Warning: Calling shuffle on null queue");
+        return false;
+    }
+    error_check();
+    if (current && exception_setup(true)) {
+        q_shuffle(current->q);
+    }
+    exception_cancel();
+    q_show(3);
+    return !error_check();
 }
 
 static bool queue_remove(position_t pos, int argc, char *argv[])
@@ -1058,6 +1079,7 @@ static void console_init()
     ADD_COMMAND(reverseK, "Reverse the nodes of the queue 'K' at a time",
                 "[K]");
     ADD_COMMAND(hello, "Print hello message", "");
+    ADD_COMMAND(shuffle, "Shuffle the nodes of the queue", "");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",

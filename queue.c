@@ -445,3 +445,29 @@ int q_merge(struct list_head *head, bool descend)
     }
     return size;
 }
+void q_shuffle(struct list_head *list)
+{
+    // length
+    int length = q_size(list);
+
+    // Perform Fisher-Yates shuffle
+    for (int i = length - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+
+        // Swap data of nodes at positions i and j
+        struct list_head *node_i = list->next;
+        struct list_head *node_j = list->next;
+
+        for (int k = 0; k < i; k++) {
+            node_i = node_i->next;
+        }
+        for (int k = 0; k < j; k++) {
+            node_j = node_j->next;
+        }
+
+        char *temp = list_entry(node_i, element_t, list)->value;
+        list_entry(node_i, element_t, list)->value =
+            list_entry(node_j, element_t, list)->value;
+        list_entry(node_j, element_t, list)->value = temp;
+    }
+}
