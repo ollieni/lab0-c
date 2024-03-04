@@ -260,10 +260,55 @@ int q_descend(struct list_head *head)
     return q_size(head);
 }
 
+void merge_two_list(struct list_head *l1, struct list_head *l2)
+{
+    struct list_head *cur1 = l1->next, *cur2 = l2->next, *swap, result;
+    INIT_LIST_HEAD(&result);
+    while (cur1 != l1 && cur2 != l2) {
+        if (strcmp(list_entry(cur1, element_t, list)->value,
+                   list_entry(cur2, element_t, list)->value) <= 0) {
+            swap = cur1;
+            cur1 = cur1->next;
+            list_del(swap);
+            list_add_tail(swap, &result);
+        } else {
+            swap = cur2;
+            cur2 = cur2->next;
+            list_del(swap);
+            list_add_tail(swap, &result);
+        }
+    }
+    while (cur1 != l1) {
+        swap = cur1;
+        cur1 = cur1->next;
+        list_del(swap);
+        list_add_tail(swap, &result);
+    }
+    while (cur2 != l2) {
+        swap = cur2;
+        cur2 = cur2->next;
+        list_del(swap);
+        list_add_tail(swap, &result);
+    }
+    list_splice_tail(&result, l1);
+}
+
 /* Merge all the queues into one sorted queue, which is in ascending/descending
  * order */
 int q_merge(struct list_head *head, bool descend)
 {
     // https://leetcode.com/problems/merge-k-sorted-lists/
-    return 0;
+    struct list_head *temp = head->next->next;
+    queue_contex_t *context1 = list_entry(head->next, queue_contex_t, chain);
+    int size = q_size(context1->q);
+    while (temp != head) {
+        queue_contex_t *cur = list_entry(temp, queue_contex_t, chain);
+        size += q_size(cur->q);
+        merge_two_list(context1->q, cur->q);
+        temp = temp->next;
+    }
+    if (descend) {
+        q_reverse(context1->q);
+    }
+    return size;
 }
