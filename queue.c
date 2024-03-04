@@ -236,11 +236,6 @@ int q_ascend(struct list_head *head)
             test_free(entry);
         }
     }
-    struct list_head *temp;
-    list_for_each (temp, head) {
-        element_t *ent = list_entry(temp, element_t, list);
-        printf("%s\n", ent->value);
-    }
     return q_size(head);
 }
 
