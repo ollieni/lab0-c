@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "list_sort.h"
 #include "queue.h"
-
 /* Notice: sometimes, Cppcheck would find the potential NULL pointer bugs,
  * but some of them cannot occur. You can suppress them by adding the
  * following line.
@@ -476,4 +476,15 @@ void q_shuffle(struct list_head *list)
             list_entry(node_j, element_t, list)->value;
         list_entry(node_j, element_t, list)->value = temp;
     }
+}
+
+void q_list_sort(struct list_head *head, bool descend)
+{
+    if (!head || q_size(head) <= 1)
+        return;
+
+    void *priv;
+    list_sort(&priv, head, &cmp);
+    if (descend)
+        q_reverse(head);
 }

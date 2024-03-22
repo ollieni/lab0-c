@@ -42,9 +42,9 @@ extern int show_entropy;
  * OK as long as head field of queue_t structure is in first position in
  * solution code
  */
-#include "queue.h"
-
 #include "console.h"
+#include "list_sort.h"
+#include "queue.h"
 #include "report.h"
 
 /* Settable parameters */
@@ -58,6 +58,7 @@ extern int show_entropy;
 #define BIG_LIST_SIZE 30
 
 extern void q_shuffle(struct list_head *head);
+extern void q_list_sort(struct list_head *head, bool descend);
 
 /* Global variables */
 
@@ -310,6 +311,56 @@ static bool do_shuffle(int argc, char *argv[])
     exception_cancel();
     q_show(3);
     return !error_check();
+}
+
+bool do_list_sort(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+
+    int cnt = 0;
+    if (!current || !current->q)
+        report(3, "Warning: Calling sort on null queue");
+    else
+        cnt = q_size(current->q);
+    error_check();
+
+    if (cnt < 2)
+        report(3, "Warning: Calling sort on single node");
+    error_check();
+
+    set_noallocate_mode(true);
+    if (current && exception_setup(true))
+        q_list_sort(current->q, descend);
+    exception_cancel();
+    set_noallocate_mode(false);
+
+    bool ok = true;
+    if (current && current->size) {
+        for (struct list_head *cur_l = current->q->next;
+             cur_l != current->q && --cnt; cur_l = cur_l->next) {
+            /* Ensure each element in ascending/descending order */
+            element_t *item, *next_item;
+            item = list_entry(cur_l, element_t, list);
+            next_item = list_entry(cur_l->next, element_t, list);
+            if (!descend && strcmp(item->value, next_item->value) > 0) {
+                report(1, "ERROR: Not sorted in ascending order");
+                ok = false;
+                break;
+            }
+
+            if (descend && strcmp(item->value, next_item->value) < 0) {
+                report(1, "ERROR: Not sorted in descending order");
+                ok = false;
+                break;
+            }
+        }
+    }
+
+    q_show(3);
+    return ok && !error_check();
 }
 
 static bool queue_remove(position_t pos, int argc, char *argv[])
@@ -1080,6 +1131,7 @@ static void console_init()
                 "[K]");
     ADD_COMMAND(hello, "Print hello message", "");
     ADD_COMMAND(shuffle, "Shuffle the nodes of the queue", "");
+    ADD_COMMAND(list_sort, "List sort queue in ascending/descening order", "");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",
